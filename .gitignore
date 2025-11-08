@@ -1,0 +1,23 @@
+# build & devel
+build/
+devel/
+catkin_ws/
+install/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+
+# ROS logs
+log/
+*.bag
+*.launch~
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Python cache (if any)
+__pycache__/
