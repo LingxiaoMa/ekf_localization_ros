@@ -1,3 +1,9 @@
+# build & devel
+build/
+devel/
+catkin_ws/
+install/
+
 # CMake
 CMakeCache.txt
 CMakeFiles/

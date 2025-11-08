@@ -8,6 +8,7 @@ project(ekf_localization)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  Eigen3 REQUIRED
   eigen_conversions
   geometry_msgs
   nav_msgs
@@ -118,7 +119,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -206,3 +207,5 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+add_executable(test_ekf_state src/ekf_localization/test_ekf_state.cpp)
+target_link_libraries(test_ekf_state ${catkin_LIBRARIES} Eigen3::Eigen)
