@@ -208,12 +208,16 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 add_library(pose_ekf src/ekf_localization/pose_ekf.cpp)
+add_library(pose_localization src/ekf_localization/pose_localization.cpp)
 
 add_executable(test_ekf_state src/ekf_localization/test_ekf_state.cpp)
 add_executable(test_ekf_control src/ekf_localization/test_ekf_control.cpp)
 add_executable(test_pose_ekf src/ekf_localization/test_pose_ekf.cpp)
+add_executable(test_pose_localization src/ekf_localization/test_pose_localization.cpp)
 
 target_link_libraries(test_ekf_state ${catkin_LIBRARIES} Eigen3::Eigen)
 target_link_libraries(test_ekf_control ${catkin_LIBRARIES} Eigen3::Eigen)
 target_link_libraries(pose_ekf ${catkin_LIBRARIES} Eigen3::Eigen)
+target_link_libraries(pose_localization ${catkin_LIBRARIES} Eigen3::Eigen)
 target_link_libraries(test_pose_ekf pose_ekf ${catkin_LIBRARIES} Eigen3::Eigen)
+target_link_libraries(test_pose_localization pose_localization pose_ekf ${catkin_LIBRARIES} Eigen3::Eigen)
