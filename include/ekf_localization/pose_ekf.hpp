@@ -7,8 +7,15 @@ namespace ekf_localization{
     class pose_ekf
     {
     private:
+    double alpha_q = 0.05;
+    double alpha_r = 0.05;
+
     double time;
     Eigen::MatrixXd Qn_; // process noise
+    Eigen::Vector3d last_delta_pos_;
+    bool qn_initialized_ = false;
+
+
     Eigen::MatrixXd Rn_; // observation noise
     Eigen::MatrixXd P_; // covariance matrix
     Eigen::VectorXd x;

@@ -1,0 +1,50 @@
+<launch>
+
+    <!-- ========================= -->
+    <!--      Mock Data Sources    -->
+    <!-- ========================= -->
+
+    <!-- Mock Odom -->
+    <node pkg="ekf_localization" type="mock_odom_node" name="mock_odom_node" output="screen" />
+
+    <!-- Mock Vision -->
+    <node pkg="ekf_localization" type="mock_vision_node" name="mock_vision_node" output="screen" />
+
+
+    <!-- ========================= -->
+    <!--       EKF Fusion Node     -->
+    <!-- ========================= -->
+    <node pkg="ekf_localization" type="ekf_main" name="fusion_ekf_node" output="screen" />
+
+
+    <!-- ========================= -->
+    <!--  Pose → Path Conversion   -->
+    <!-- ========================= -->
+
+    <!-- Convert odom to path -->
+    <node pkg="ekf_localization" type="pose_to_path_node" name="odom_to_path" output="screen">
+        <param name="pose_topic" value="/odom_input" />
+        <param name="path_topic" value="/odom_path" />
+    </node>
+
+    <!-- Convert vision to path -->
+    <node pkg="ekf_localization" type="pose_to_path_node" name="vision_to_path" output="screen">
+        <param name="pose_topic" value="/vision_input" />
+        <param name="path_topic" value="/vision_path" />
+    </node>
+
+    <!-- Convert EKF output to path -->
+    <node pkg="ekf_localization" type="pose_to_path_node" name="ekf_to_path" output="screen">
+        <param name="pose_topic" value="/fusion_ekf_pose" />
+        <param name="path_topic" value="/ekf_path" />
+    </node>
+
+
+    <!-- ========================= -->
+    <!--    Launch RViz (optional) -->
+    <!-- ========================= -->
+    <node pkg="rviz" type="rviz" name="rviz" required="false">
+        <param name="fixed_frame" value="map"/>
+    </node>
+
+</launch>

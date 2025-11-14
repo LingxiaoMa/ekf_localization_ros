@@ -16,6 +16,17 @@ find_package(catkin REQUIRED COMPONENTS
   tf
 )
 
+add_message_files(
+  FILES
+  controlInput.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -106,11 +117,12 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
+  CATKIN_DEPENDS message_runtime std_msgs)
 #  INCLUDE_DIRS include
 #  LIBRARIES ekf_localization
 #  CATKIN_DEPENDS eigen_conversions geometry_msgs nav_msgs roscpp tf
 #  DEPENDS system_lib
-)
+
 
 ###########
 ## Build ##
@@ -207,17 +219,116 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_library(pose_ekf src/ekf_localization/pose_ekf.cpp)
-add_library(pose_localization src/ekf_localization/pose_localization.cpp)
+### ======================================================
+### 1. 生成库：pose_ekf
+### ======================================================
+add_library(pose_ekf
+    src/ekf_localization/pose_ekf.cpp
+)
 
-add_executable(test_ekf_state src/ekf_localization/test_ekf_state.cpp)
-add_executable(test_ekf_control src/ekf_localization/test_ekf_control.cpp)
-add_executable(test_pose_ekf src/ekf_localization/test_pose_ekf.cpp)
-add_executable(test_pose_localization src/ekf_localization/test_pose_localization.cpp)
+target_link_libraries(pose_ekf
+    ${catkin_LIBRARIES}
+    Eigen3::Eigen
+)
 
-target_link_libraries(test_ekf_state ${catkin_LIBRARIES} Eigen3::Eigen)
-target_link_libraries(test_ekf_control ${catkin_LIBRARIES} Eigen3::Eigen)
-target_link_libraries(pose_ekf ${catkin_LIBRARIES} Eigen3::Eigen)
-target_link_libraries(pose_localization ${catkin_LIBRARIES} Eigen3::Eigen)
-target_link_libraries(test_pose_ekf pose_ekf ${catkin_LIBRARIES} Eigen3::Eigen)
-target_link_libraries(test_pose_localization pose_localization pose_ekf ${catkin_LIBRARIES} Eigen3::Eigen)
+### ======================================================
+### 2. 生成库：pose_localization（依赖 pose_ekf）
+### ======================================================
+add_library(pose_localization
+    src/ekf_localization/pose_localization.cpp
+)
+
+target_link_libraries(pose_localization
+    pose_ekf
+    ${catkin_LIBRARIES}
+    Eigen3::Eigen
+)
+
+### ======================================================
+### 3. fusion_ekf_node 作为库（供 main 调用）
+### ======================================================
+add_library(fusion_ekf_node_lib
+    src/ekf_localization/fusion_ekf_node.cpp
+)
+
+target_link_libraries(fusion_ekf_node_lib
+    pose_localization
+    pose_ekf
+    ${catkin_LIBRARIES}
+    Eigen3::Eigen
+)
+
+### ======================================================
+### 4. EKF 主程序
+### ======================================================
+add_executable(ekf_main
+    src/ekf_localization/ekf_main.cpp
+)
+
+target_link_libraries(ekf_main
+    fusion_ekf_node_lib
+    ${catkin_LIBRARIES}
+    Eigen3::Eigen
+)
+
+### ======================================================
+### 5. Mock Nodes（只依赖 ROS）
+### ======================================================
+add_executable(mock_odom_node
+    src/ekf_localization/mock_odom_node.cpp
+)
+target_link_libraries(mock_odom_node
+    ${catkin_LIBRARIES}
+)
+
+add_executable(mock_vision_node
+    src/ekf_localization/mock_vision_node.cpp
+)
+target_link_libraries(mock_vision_node
+    ${catkin_LIBRARIES}
+)
+
+### ======================================================
+### 6. Test executables
+### ======================================================
+
+add_executable(test_ekf_state
+    src/ekf_localization/test_ekf_state.cpp
+)
+target_link_libraries(test_ekf_state
+    pose_ekf
+    ${catkin_LIBRARIES}
+    Eigen3::Eigen
+)
+
+add_executable(test_ekf_control
+    src/ekf_localization/test_ekf_control.cpp
+)
+target_link_libraries(test_ekf_control
+    pose_ekf
+    ${catkin_LIBRARIES}
+    Eigen3::Eigen
+)
+
+add_executable(test_pose_ekf
+    src/ekf_localization/test_pose_ekf.cpp
+)
+target_link_libraries(test_pose_ekf
+    pose_ekf
+    ${catkin_LIBRARIES}
+    Eigen3::Eigen
+)
+
+add_executable(test_pose_localization
+    src/ekf_localization/test_pose_localization.cpp
+)
+target_link_libraries(test_pose_localization
+    pose_localization
+    pose_ekf
+    ${catkin_LIBRARIES}
+    Eigen3::Eigen
+)
+
+add_executable(pose_to_path_node src/ekf_localization/pose_to_path_node.cpp)
+target_link_libraries(pose_to_path_node ${catkin_LIBRARIES})
+
